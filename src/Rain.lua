@@ -794,6 +794,10 @@ function Rain:Enable(tweenInfo)
 		rainAttachments[i].Parent = workspace.Terrain
 	end
 	
+	if RunService:IsRunning() then -- don't need sound in studio preview, it won't work anyway
+		SoundGroup.Parent = game:GetService("SoundService")
+	end
+	
 	connectLoop()
 	
 	if tweenInfo then
