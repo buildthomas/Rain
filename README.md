@@ -16,7 +16,7 @@ https://www.roblox.com/library/2166774609/Rain-Plugin
 
 # Examples
 
-https://gfycat.com/HeavenlyCelebratedBee.gif
+https://gfycat.com/HeavenlyCelebratedBee
 
 https://gfycat.com/LittleClassicGoldenretriever
 
