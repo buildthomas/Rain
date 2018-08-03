@@ -282,6 +282,7 @@ Sound.Volume = volumeTarget
 Sound.SoundId = RAIN_SOUND_ASSET
 Sound.Looped = true
 Sound.SoundGroup = SoundGroup
+Sound.Parent = SoundGroup
 Sound.Archivable = false
 
 -- emitter block around camera used when outside
