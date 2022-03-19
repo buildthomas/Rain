@@ -313,6 +313,7 @@ local Emitter do
 	straight.Speed = NumberRange.new(RAIN_STRAIGHT_MAX_SPEED)
 	straight.EmissionDirection = Enum.NormalId.Bottom
 	straight.Parent = Emitter
+	straight.Orientation = Enum.ParticleOrientation.FacingCameraWorldUp
 	
 	local topdown = Instance.new("ParticleEmitter")
 	topdown.Name = "RainTopDown"
