@@ -507,7 +507,7 @@ local function connectLoop()
 			}
 			
 			-- Find desired rotation for the straight rain particles
-			local mapped = workspace.Camera.CFrame:inverse() * (workspace.Camera.CFrame.p - rainDirection)
+			local mapped = workspace.CurrentCamera.CFrame:inverse() * (workspace.CurrentCamera.CFrame.p - rainDirection)
 			local straightRotation = NumberRange.new(math.deg(math.atan2(-mapped.x, mapped.y)))
 			
 			if inside then
