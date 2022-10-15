@@ -1,0 +1,6 @@
+{
+	"name": "Rain",
+	"tree": {
+		"$path": "src/Rain.lua"
+	}
+}
