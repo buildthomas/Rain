@@ -405,7 +405,7 @@ local raycastFunctions = {
 		-- draw multiple raycasts concatenated to each other until no hit / valid hit found
 		while ray.Direction.magnitude > 0.001 do
 			local part, pos, norm, mat = workspace:FindPartOnRayWithIgnoreList(ray, ignoreEmitterList)
-			if not part or collisionFunc(part) then
+			if not part or not collisionFunc(part) then
 				return part, pos, norm, mat
 			end
 			local start = pos + ray.Direction.Unit * 0.001
