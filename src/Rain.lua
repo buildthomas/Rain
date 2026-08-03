@@ -266,7 +266,7 @@ local NSK010 = NumberSequenceKeypoint.new(0, 1, 0)
 local NSK110 = NumberSequenceKeypoint.new(1, 1, 0)
 
 local volumeScanGrid = {} -- Pre-generate grid used for raining area distance scanning
-for _, v in pairs(RAIN_VOLUME_SCAN_GRID) do
+for _, v in RAIN_VOLUME_SCAN_GRID do
     table.insert(volumeScanGrid, v * RAIN_VOLUME_SCAN_RADIUS)
 end
 table.sort(volumeScanGrid, function(a, b) -- Optimization: sort from close to far away for fast evaluation if closeby
@@ -289,7 +289,7 @@ Sound.Parent = SoundGroup
 Sound.Archivable = false
 
 -- emitter block around camera used when outside
-local Emitter
+local Emitter, EmitterStraight, EmitterTopDown
 do
     Emitter = Instance.new("Part")
     Emitter.Transparency = 1
@@ -304,6 +304,7 @@ do
     Emitter.Archivable = false
 
     local straight = Instance.new("ParticleEmitter")
+    EmitterStraight = straight
     straight.Name = "RainStraight"
     straight.LightEmission = RAIN_DEFAULT_LIGHTEMISSION
     straight.LightInfluence = RAIN_DEFAULT_LIGHTINFLUENCE
@@ -319,6 +320,7 @@ do
     straight.Orientation = Enum.ParticleOrientation.FacingCameraWorldUp
 
     local topdown = Instance.new("ParticleEmitter")
+    EmitterTopDown = topdown
     topdown.Name = "RainTopDown"
     topdown.LightEmission = RAIN_DEFAULT_LIGHTEMISSION
     topdown.LightInfluence = RAIN_DEFAULT_LIGHTINFLUENCE
@@ -335,9 +337,13 @@ do
 end
 
 local splashAttachments, rainAttachments
+local splashEmitters, occludedStraightEmitters, occludedTopDownEmitters
 do
     splashAttachments = {}
     rainAttachments = {}
+    splashEmitters = {}
+    occludedStraightEmitters = {}
+    occludedTopDownEmitters = {}
 
     for _ = 1, RAIN_SPLASH_NUM do
         -- splashes on ground
@@ -363,17 +369,18 @@ do
         splash.Parent = splashAttachment
         splashAttachment.Archivable = false
         table.insert(splashAttachments, splashAttachment)
+        table.insert(splashEmitters, splash)
 
         -- occluded rain particle generation
         local rainAttachment = Instance.new("Attachment")
         rainAttachment.Name = "__RainOccludedAttachment"
-        local straightOccluded = Emitter.RainStraight:Clone()
+        local straightOccluded = EmitterStraight:Clone()
         straightOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_MINSPEED, RAIN_OCCLUDED_MAXSPEED)
         straightOccluded.SpreadAngle = RAIN_OCCLUDED_SPREAD
         straightOccluded.LockedToPart = false
         straightOccluded.Enabled = false
         straightOccluded.Parent = rainAttachment
-        local topdownOccluded = Emitter.RainTopDown:Clone()
+        local topdownOccluded = EmitterTopDown:Clone()
         topdownOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_MINSPEED, RAIN_OCCLUDED_MAXSPEED)
         topdownOccluded.SpreadAngle = RAIN_OCCLUDED_SPREAD
         topdownOccluded.LockedToPart = false
@@ -381,6 +388,8 @@ do
         topdownOccluded.Parent = rainAttachment
         rainAttachment.Archivable = false
         table.insert(rainAttachments, rainAttachment)
+        table.insert(occludedStraightEmitters, straightOccluded)
+        table.insert(occludedTopDownEmitters, topdownOccluded)
     end
 end
 
@@ -447,11 +456,12 @@ local function connectLoop()
         connections,
         RunService.RenderStepped:Connect(function()
             local cameraCFrame = workspace.CurrentCamera.CFrame
+            local cameraPosition = cameraCFrame.Position
 
             -- Check if camera is outside or inside
-            local occlusion = raycast(cameraCFrame.Position, -rainDirection * RAIN_SCANHEIGHT, true)
+            local occlusion = raycast(cameraPosition, -rainDirection * RAIN_SCANHEIGHT, true)
 
-            if (not currentCeiling or cameraCFrame.Position.y <= currentCeiling) and not occlusion then
+            if (not currentCeiling or cameraPosition.y <= currentCeiling) and not occlusion then
                 -- Camera is outside and under ceiling
 
                 if volumeTarget < 1 and not disabled then
@@ -461,18 +471,16 @@ local function connectLoop()
 
                 frame = RAIN_UPDATE_PERIOD
 
-                local t = math.abs(cameraCFrame.LookVector:Dot(rainDirection))
+                local lookVector = cameraCFrame.LookVector
+                local t = math.abs(lookVector:Dot(rainDirection))
 
-                local center = cameraCFrame.Position
-                local right = cameraCFrame.LookVector:Cross(-rainDirection)
+                local center = cameraPosition
+                local right = lookVector:Cross(-rainDirection)
                 right = if right.magnitude > 0.001 then right.Unit else -rainDirection
                 local forward = rainDirection:Cross(right).Unit
 
-                Emitter.Size = v3(
-                    RAIN_EMITTER_DIM_DEFAULT,
-                    RAIN_EMITTER_DIM_DEFAULT,
-                    RAIN_EMITTER_DIM_DEFAULT + (1 - t) * (RAIN_EMITTER_DIM_MAXFORWARD - RAIN_EMITTER_DIM_DEFAULT)
-                )
+                local depth = RAIN_EMITTER_DIM_DEFAULT + (1 - t) * (RAIN_EMITTER_DIM_MAXFORWARD - RAIN_EMITTER_DIM_DEFAULT)
+                Emitter.Size = v3(RAIN_EMITTER_DIM_DEFAULT, RAIN_EMITTER_DIM_DEFAULT, depth)
 
                 Emitter.CFrame = CFrame.new(
                     center.x,
@@ -487,17 +495,17 @@ local function connectLoop()
                     right.z,
                     -rainDirection.z,
                     forward.z
-                ) + (1 - t) * cameraCFrame.LookVector * Emitter.Size.Z / 3 - t * rainDirection * RAIN_EMITTER_UP_MODIFIER
+                ) + (1 - t) * lookVector * depth / 3 - t * rainDirection * RAIN_EMITTER_UP_MODIFIER
 
-                Emitter.RainStraight.Enabled = true
-                Emitter.RainTopDown.Enabled = true
+                EmitterStraight.Enabled = true
+                EmitterTopDown.Enabled = true
 
                 inside = false
             else
                 -- Camera is inside / above ceiling
 
-                Emitter.RainStraight.Enabled = false
-                Emitter.RainTopDown.Enabled = false
+                EmitterStraight.Enabled = false
+                EmitterTopDown.Enabled = false
 
                 inside = true
             end
@@ -533,15 +541,16 @@ local function connectLoop()
                 })
 
                 -- Find desired rotation for the straight rain particles
-                local mapped = cameraCFrame:Inverse() * (cameraCFrame.Position - rainDirection)
+                local mapped = cameraCFrame:VectorToObjectSpace(-rainDirection)
                 local straightRotation = NumberRange.new(math.deg(math.atan2(-mapped.x, mapped.y)))
 
                 if inside then
                     -- Update emitter properties
-                    for _, v in pairs(rainAttachments) do
-                        v.RainStraight.Transparency = straightSequence
-                        v.RainStraight.Rotation = straightRotation
-                        v.RainTopDown.Transparency = topdownSequence
+                    for i = 1, RAIN_SPLASH_NUM do
+                        local straightEmitter = occludedStraightEmitters[i]
+                        straightEmitter.Transparency = straightSequence
+                        straightEmitter.Rotation = straightRotation
+                        occludedTopDownEmitters[i].Transparency = topdownSequence
                     end
 
                     if not disabled then
@@ -574,9 +583,9 @@ local function connectLoop()
                     end
                 else
                     -- Update emitter properties
-                    Emitter.RainStraight.Transparency = straightSequence
-                    Emitter.RainStraight.Rotation = straightRotation
-                    Emitter.RainTopDown.Transparency = topdownSequence
+                    EmitterStraight.Transparency = straightSequence
+                    EmitterStraight.Rotation = straightRotation
+                    EmitterTopDown.Transparency = topdownSequence
                 end
 
                 -- Reset frame counter
@@ -601,12 +610,15 @@ local function connectLoop()
                 -rainDirection.z,
                 forward.z
             )
+            local transformRotation = transform - center
             local rayDirection = rainDirection * RAIN_OCCLUDECHECK_SCAN_Y
 
             -- Splash and occlusion effects
             for i = 1, numSplashes do
                 local splashAttachment = splashAttachments[i]
                 local rainAttachment = rainAttachments[i]
+                local occludedStraight = occludedStraightEmitters[i]
+                local occludedTopDown = occludedTopDownEmitters[i]
 
                 -- Sample random splash position
                 local x = rng:NextNumber(RAIN_OCCLUDECHECK_OFFSET_XZ_MIN, RAIN_OCCLUDECHECK_OFFSET_XZ_MAX)
@@ -616,7 +628,7 @@ local function connectLoop()
                 if impact then
                     -- Draw a splash at hit
                     splashAttachment.Position = impact.Position + impact.Normal * RAIN_SPLASH_CORRECTION_Y
-                    splashAttachment.RainSplash:Emit(1)
+                    splashEmitters[i]:Emit(1)
 
                     if inside then
                         -- Draw occlusion rain particles a little bit above the splash position
@@ -624,9 +636,9 @@ local function connectLoop()
                         if currentCeiling and corrected.Y > currentCeiling and rainDirection.Y < 0 then
                             corrected = corrected + rainDirection * (currentCeiling - corrected.Y) / rainDirection.Y
                         end
-                        rainAttachment.CFrame = transform - transform.p + corrected
-                        rainAttachment.RainStraight:Emit(intensityOccludedRain)
-                        rainAttachment.RainTopDown:Emit(intensityOccludedRain)
+                        rainAttachment.CFrame = transformRotation + corrected
+                        occludedStraight:Emit(intensityOccludedRain)
+                        occludedTopDown:Emit(intensityOccludedRain)
                     end
                 elseif inside then
                     -- Draw occlusion rain particles on the XZ-position at around the camera's height
@@ -634,9 +646,9 @@ local function connectLoop()
                     if currentCeiling and corrected.Y > currentCeiling and rainDirection.Y < 0 then
                         corrected = corrected + rainDirection * (currentCeiling - corrected.Y) / rainDirection.Y
                     end
-                    rainAttachment.CFrame = transform - transform.p + corrected
-                    rainAttachment.RainStraight:Emit(intensityOccludedRain)
-                    rainAttachment.RainTopDown:Emit(intensityOccludedRain)
+                    rainAttachment.CFrame = transformRotation + corrected
+                    occludedStraight:Emit(intensityOccludedRain)
+                    occludedTopDown:Emit(intensityOccludedRain)
                 end
             end
         end)
@@ -646,7 +658,7 @@ end
 local function disconnectLoop()
     -- If present, disconnect all RunService connections
     if #connections > 0 then
-        for _, v in pairs(connections) do
+        for _, v in connections do
             v:Disconnect()
         end
         connections = {}
@@ -670,8 +682,8 @@ local function disable()
     disconnectLoop()
 
     -- Hide Emitter
-    Emitter.RainStraight.Enabled = false
-    Emitter.RainTopDown.Enabled = false
+    EmitterStraight.Enabled = false
+    EmitterTopDown.Enabled = false
     Emitter.Size = MIN_SIZE
 
     -- Disable sound now if not tweened into disabled state beforehand
@@ -694,15 +706,15 @@ end
 local Color = makeProperty("Color3Value", RAIN_DEFAULT_COLOR, function(value)
     local ColorSequence = ColorSequence.new(value)
 
-    Emitter.RainStraight.Color = ColorSequence
-    Emitter.RainTopDown.Color = ColorSequence
+    EmitterStraight.Color = ColorSequence
+    EmitterTopDown.Color = ColorSequence
 
-    for _, v in pairs(splashAttachments) do
-        v.RainSplash.Color = ColorSequence
+    for _, v in splashEmitters do
+        v.Color = ColorSequence
     end
-    for _, v in pairs(rainAttachments) do
-        v.RainStraight.Color = ColorSequence
-        v.RainTopDown.Color = ColorSequence
+    for i = 1, RAIN_SPLASH_NUM do
+        occludedStraightEmitters[i].Color = ColorSequence
+        occludedTopDownEmitters[i].Color = ColorSequence
     end
 end) :: Color3Value
 
@@ -720,8 +732,8 @@ local function updateTransparency(value)
         NSK110,
     })
 
-    for _, v in pairs(splashAttachments) do
-        v.RainSplash.Transparency = splashSequence
+    for _, v in splashEmitters do
+        v.Transparency = splashSequence
     end
 end
 
@@ -729,41 +741,41 @@ local Transparency = makeProperty("NumberValue", RAIN_DEFAULT_TRANSPARENCY, upda
 GlobalModifier.Changed:Connect(updateTransparency)
 
 local SpeedRatio = makeProperty("NumberValue", RAIN_DEFAULT_SPEEDRATIO, function(value)
-    Emitter.RainStraight.Speed = NumberRange.new(value * RAIN_STRAIGHT_MAX_SPEED)
-    Emitter.RainTopDown.Speed = NumberRange.new(value * RAIN_TOPDOWN_MAX_SPEED)
+    EmitterStraight.Speed = NumberRange.new(value * RAIN_STRAIGHT_MAX_SPEED)
+    EmitterTopDown.Speed = NumberRange.new(value * RAIN_TOPDOWN_MAX_SPEED)
 end) :: NumberValue
 
 local IntensityRatio = makeProperty("NumberValue", RAIN_DEFAULT_INTENSITYRATIO, function(value)
-    Emitter.RainStraight.Rate = RAIN_STRAIGHT_MAX_RATE * value
-    Emitter.RainTopDown.Rate = RAIN_TOPDOWN_MAX_RATE * value
+    EmitterStraight.Rate = RAIN_STRAIGHT_MAX_RATE * value
+    EmitterTopDown.Rate = RAIN_TOPDOWN_MAX_RATE * value
 
     intensityOccludedRain = math.ceil(RAIN_OCCLUDED_MAXINTENSITY * value)
     numSplashes = RAIN_SPLASH_NUM * value
 end) :: NumberValue
 
 local LightEmission = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTEMISSION, function(value)
-    Emitter.RainStraight.LightEmission = value
-    Emitter.RainTopDown.LightEmission = value
+    EmitterStraight.LightEmission = value
+    EmitterTopDown.LightEmission = value
 
-    for _, v in pairs(rainAttachments) do
-        v.RainStraight.LightEmission = value
-        v.RainTopDown.LightEmission = value
+    for i = 1, RAIN_SPLASH_NUM do
+        occludedStraightEmitters[i].LightEmission = value
+        occludedTopDownEmitters[i].LightEmission = value
     end
-    for _, v in pairs(splashAttachments) do
-        v.RainSplash.LightEmission = value
+    for _, v in splashEmitters do
+        v.LightEmission = value
     end
 end) :: NumberValue
 
 local LightInfluence = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTINFLUENCE, function(value)
-    Emitter.RainStraight.LightInfluence = value
-    Emitter.RainTopDown.LightInfluence = value
+    EmitterStraight.LightInfluence = value
+    EmitterTopDown.LightInfluence = value
 
-    for _, v in pairs(rainAttachments) do
-        v.RainStraight.LightInfluence = value
-        v.RainTopDown.LightInfluence = value
+    for i = 1, RAIN_SPLASH_NUM do
+        occludedStraightEmitters[i].LightInfluence = value
+        occludedTopDownEmitters[i].LightInfluence = value
     end
-    for _, v in pairs(splashAttachments) do
-        v.RainSplash.LightInfluence = value
+    for _, v in splashEmitters do
+        v.LightInfluence = value
     end
 end) :: NumberValue
 
@@ -786,8 +798,8 @@ function Rain:Enable(tweenInfo: TweenInfo?)
 
     disconnectLoop() -- Just in case :Enable(..) is called multiple times on accident
 
-    Emitter.RainStraight.Enabled = true
-    Emitter.RainTopDown.Enabled = true
+    EmitterStraight.Enabled = true
+    EmitterTopDown.Enabled = true
     Emitter.Parent = workspace.CurrentCamera
 
     for i = 1, RAIN_SPLASH_NUM do
@@ -925,10 +937,10 @@ function Rain:SetStraightTexture(asset: string)
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
 
-    Emitter.RainStraight.Texture = asset
+    EmitterStraight.Texture = asset
 
-    for _, v in pairs(rainAttachments) do
-        v.RainStraight.Texture = asset
+    for _, v in occludedStraightEmitters do
+        v.Texture = asset
     end
 end
 
@@ -937,10 +949,10 @@ function Rain:SetTopDownTexture(asset: string)
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
 
-    Emitter.RainTopDown.Texture = asset
+    EmitterTopDown.Texture = asset
 
-    for _, v in pairs(rainAttachments) do
-        v.RainTopDown.Texture = asset
+    for _, v in occludedTopDownEmitters do
+        v.Texture = asset
     end
 end
 
@@ -949,8 +961,8 @@ function Rain:SetSplashTexture(asset: string)
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
 
-    for _, v in pairs(splashAttachments) do
-        v.RainSplash.Texture = asset
+    for _, v in splashEmitters do
+        v.Texture = asset
     end
 end
 
