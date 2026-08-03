@@ -1,108 +1,112 @@
 --[[
-	
-	Rain module v1.0 by buildthomas (July 2018)
-	
-	This module is licensed under the APLv2:
-	http://www.apache.org/licenses/LICENSE-2.0
-	
-	In short, you may use this code only if you agree to the following:
-	* This notice must always be present and may not be modified or removed in any copy of this code or derived code.
-	* You may use this in commercial, closed source projects, and you may modify the source code itself.
-	
-	Refer to the license for a full description.
-	
-	For questions please reach out on the Developer Forum (@buildthomas)
-	or via Twitter (https://www.twitter.com/buildthomasRBX)
-	
-	------
-	
-	
-	Rain:Enable(<TweenInfo> tweenInfo)
-		Enable the rain effects instantly, or over a given easing function if tweenInfo is given.
-		
-	Rain:Disable(<TweenInfo> tweenInfo)
-		Disable the rain effects instantly, or over a given easing function if tweenInfo is given.
-		
-		
-	Rain:SetColor(<Color3> color, <TweenInfo> tweenInfo)
-		Set the global color of all rain particles to a given Color3 value.
-		Sets the color instantly, or over a given easing function if tweenInfo is given.
-		Color sequences are not supported because this would lead to a messy effect.
-		The starting value is RAIN_DEFAULT_COLOR.
-		
-	Rain:SetTransparency(<number> transparency, <TweenInfo> tweenInfo)
-		Set the global transparency of all rain effects. 0 = regular visibility, 1 = fully invisible.
-		Sets the transparency instantly, or over a given easing function if tweenInfo is given.
-		Clamped between 0 and 1, the starting value is RAIN_DEFAULT_TRANSPARENCY.
-	
-	Rain:SetSpeedRatio(<number> ratio, <TweenInfo> tweenInfo)
-		Set the vertical falling speed of the rain particles. 0 = still, 1 = max falling speed.
-		Sets the speed instantly, or over a given easing function if tweenInfo is given.
-		Clamped between 0 and 1, the starting value is RAIN_DEFAULT_SPEEDRATIO.
-		
-	Rain:SetIntensityRatio(<number> ratio, <TweenInfo> tweenInfo)
-		Set the intensity of the rain. 0 = no effects, 1 = full effects.
-		Sets the intensity instantly, or over a given easing function if tweenInfo is given.
-		Clamped between 0 and 1, the starting value is RAIN_DEFAULT_INTENSITYRATIO.
-		
-	Rain:SetLightEmission(<number> ratio, <TweenInfo> tweenInfo)
-		Set the global light emission of all rain effects.
-		Sets the light emission instantly, or over a given easing function if tweenInfo is given.
-		Clamped between 0 and 1, the starting value is RAIN_DEFAULT_LIGHTEMISSION.
-		
-	Rain:SetLightInfluence(<number> transparency, <TweenInfo> tweenInfo)
-		Set the global light influence of all rain effects.
-		Sets the light influence instantly, or over a given easing function if tweenInfo is given.
-		Clamped between 0 and 1, the starting value is RAIN_DEFAULT_LIGHTINFLUENCE.
-		
-		
-	Rain:SetVolume(<number> volume, <TweenInfo> tweenInfo)
-		Set the global max volume of rain instantly, or over a given easing function if tweenInfo is given.
-		The initial volume of the rain's soundgroup is RAIN_SOUND_BASEVOLUME.
-		
-		
-	Rain:SetCeiling(<Variant<number, nil>> ceiling)
-		Set a Y coordinate that marks the ceiling of the world. Above this spot, rain will act as if it's indoors.
-		Feed nil to remove any previously set ceiling.
-		
-		
-	Rain:SetDirection(<Vector3> direction, <TweenInfo> tweenInfo)
-		Set the direction that rain falls from. The direction parameter should be a unit direction.
-		Sets the rain direction instantly, or over a given easing function if tweenInfo is given.
-		
-	Rain:SetStraightTexture(<string> asset)
-	Rain:SetTopDownTexture(<string> asset)
-	Rain:SetSplashTexture(<string> asset)
-		Adjust textures of the rain effect.
-		
-	Rain:SetSoundId(<string> asset)
-		Adjust sound effect of the rain effect.
-		
-	Rain:SetCollisionMode(<Rain.CollisionMode> mode, ...)
-		Sets the current way collisions are determined for the rain.
-		
-		Rain.CollisionMode
-			A table that should be seen as an enumerator for the collision mode.
-			The following values are available:
-			* Rain.CollisionMode.None			- All parts in the default collision group will block the rain.
-			* Rain.CollisionMode.Whitelist		- Use the whitelist provided by Rain::SetCollisionWhitelist.
-			* Rain.CollisionMode.Blacklist		- Use the blacklist provided by Rain::SetCollisionBlacklist.
-			* Rain.CollisionMode.Function		- Use the test function provided by Rain::SetCollisionFunction and do deep-casts.
-			
-		Rain:SetCollisionMode(Rain.CollisionMode.None)
-			No parameters.
-			
-		Rain:SetCollisionMode(Rain.CollisionMode.Whitelist, <Variant<Instance, table>> whitelist)
-			The provided value can either be a hierarchy of objects or a table of objects to filter with.
-		
-		Rain:SetCollisionMode(Rain.CollisionMode.Blacklist, <Variant<Instance, table>> blacklist)
-			The provided value can either be a hierarchy of objects or a table of objects to filter out.
-			
-		Rain:SetCollisionMode(Rain.CollisionMode.Function, <function<BasePart -> boolean>> f)
-			If f(part) returns a value that lua evaluates to a true condition, that part can be hit by rain.
-			If f(part) returns any other value, that part cannot be hit by the rain.
-			
-	
+    
+    Rain module v1.0 by buildthomas (July 2018)
+    
+    This module is licensed under the APLv2:
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+    In short, you may use this code only if you agree to the following:
+    * This notice must always be present and may not be modified or removed in any copy of this code or derived code.
+    * You may use this in commercial, closed source projects, and you may modify the source code itself.
+    
+    Refer to the license for a full description.
+    
+    For questions please reach out on the Developer Forum (@buildthomas)
+    or via Twitter (https://www.twitter.com/buildthomasRBX)
+    
+    ------
+    
+    
+    Rain:Enable(<TweenInfo> tweenInfo)
+        Enable the rain effects instantly, or over a given easing function if tweenInfo is given.
+        
+    Rain:Disable(<TweenInfo> tweenInfo)
+        Disable the rain effects instantly, or over a given easing function if tweenInfo is given.
+        
+        
+    Rain:SetColor(<Color3> color, <TweenInfo> tweenInfo)
+        Set the global color of all rain particles to a given Color3 value.
+        Sets the color instantly, or over a given easing function if tweenInfo is given.
+        Color sequences are not supported because this would lead to a messy effect.
+        The starting value is RAIN_DEFAULT_COLOR.
+        
+    Rain:SetTransparency(<number> transparency, <TweenInfo> tweenInfo)
+        Set the global transparency of all rain effects. 0 = regular visibility, 1 = fully invisible.
+        Sets the transparency instantly, or over a given easing function if tweenInfo is given.
+        Clamped between 0 and 1, the starting value is RAIN_DEFAULT_TRANSPARENCY.
+    
+    Rain:SetSpeedRatio(<number> ratio, <TweenInfo> tweenInfo)
+        Set the vertical falling speed of the rain particles. 0 = still, 1 = max falling speed.
+        Sets the speed instantly, or over a given easing function if tweenInfo is given.
+        Clamped between 0 and 1, the starting value is RAIN_DEFAULT_SPEEDRATIO.
+        
+    Rain:SetIntensityRatio(<number> ratio, <TweenInfo> tweenInfo)
+        Set the intensity of the rain. 0 = no effects, 1 = full effects.
+        Sets the intensity instantly, or over a given easing function if tweenInfo is given.
+        Clamped between 0 and 1, the starting value is RAIN_DEFAULT_INTENSITYRATIO.
+        
+    Rain:SetLightEmission(<number> ratio, <TweenInfo> tweenInfo)
+        Set the global light emission of all rain effects.
+        Sets the light emission instantly, or over a given easing function if tweenInfo is given.
+        Clamped between 0 and 1, the starting value is RAIN_DEFAULT_LIGHTEMISSION.
+        
+    Rain:SetLightInfluence(<number> transparency, <TweenInfo> tweenInfo)
+        Set the global light influence of all rain effects.
+        Sets the light influence instantly, or over a given easing function if tweenInfo is given.
+        Clamped between 0 and 1, the starting value is RAIN_DEFAULT_LIGHTINFLUENCE.
+        
+        
+    Rain:SetVolume(<number> volume, <TweenInfo> tweenInfo)
+        Set the global max volume of rain instantly, or over a given easing function if tweenInfo is given.
+        The initial volume of the rain's soundgroup is RAIN_SOUND_BASEVOLUME.
+        
+        
+    Rain:SetCeiling(<Variant<number, nil>> ceiling)
+        Set a Y coordinate that marks the ceiling of the world. Above this spot, rain will act as if it's indoors.
+        Feed nil to remove any previously set ceiling.
+        
+        
+    Rain:SetDirection(<Vector3> direction, <TweenInfo> tweenInfo)
+        Set the direction that rain falls from. The direction parameter should be a unit direction.
+        Sets the rain direction instantly, or over a given easing function if tweenInfo is given.
+        
+    Rain:SetStraightTexture(<string> asset)
+    Rain:SetTopDownTexture(<string> asset)
+    Rain:SetSplashTexture(<string> asset)
+        Adjust textures of the rain effect.
+        
+    Rain:SetSoundId(<string> asset)
+        Adjust sound effect of the rain effect.
+        
+    Rain:SetCollisionMode(<Rain.CollisionMode> mode, ...)
+        Sets the current way collisions are determined for the rain.
+        
+        Rain.CollisionMode
+            A table that should be seen as an enumerator for the collision mode.
+            The following values are available:
+            * Rain.CollisionMode.None			- All parts in the default collision group will block the rain.
+            * Rain.CollisionMode.Params			- Use the RaycastParams provided to Rain::SetCollisionMode.
+            * Rain.CollisionMode.Function		- Use the test function provided to Rain::SetCollisionMode and do deep-casts.
+            * Rain.CollisionMode.Whitelist		- Deprecated, use Rain.CollisionMode.Params instead.
+            * Rain.CollisionMode.Blacklist		- Deprecated, use Rain.CollisionMode.Params instead.
+
+        Rain:SetCollisionMode(Rain.CollisionMode.None)
+            No parameters.
+
+        Rain:SetCollisionMode(Rain.CollisionMode.Params, <RaycastParams> params)
+            The provided params are used for every cast the rain makes.
+
+        Rain:SetCollisionMode(Rain.CollisionMode.Function, <function<BasePart -> boolean>> f)
+            If f(part) returns a value that lua evaluates to a true condition, that part can be hit by rain.
+            If f(part) returns any other value, that part cannot be hit by the rain.
+
+        Rain:SetCollisionMode(Rain.CollisionMode.Whitelist, <Variant<Instance, table>> whitelist)
+            The provided value can either be a hierarchy of objects or a table of objects to filter with.
+
+        Rain:SetCollisionMode(Rain.CollisionMode.Blacklist, <Variant<Instance, table>> blacklist)
+            The provided value can either be a hierarchy of objects or a table of objects to filter out.
+            
+    
 --]]
 
 -- Options:
@@ -128,7 +132,6 @@ local RAIN_EMITTER_UP_MODIFIER = 20 -- Maximum vertical displacement of emitter 
 
 local RAIN_SOUND_ASSET = "rbxassetid://1516791621"
 local RAIN_SOUND_BASEVOLUME = 0.2 -- Starting volume of rain sound effect when not occluded
-local RAIN_SOUND_FADEIN_TIME = 1 -- Tween in/out times for sound volume
 local RAIN_SOUND_FADEOUT_TIME = 1
 
 local RAIN_STRAIGHT_ASSET = "rbxassetid://1822883048" -- Some properties of the straight rain particle effect
@@ -222,19 +225,12 @@ local RAIN_VOLUME_SCAN_GRID = { -- Unit range grid for scanning how far away use
 
 local CollisionMode = {
     None = 0,
-    Whitelist = 1,
-    Blacklist = 2,
-    Function = 3,
-    Params = 4,
+    Params = 1,
+    Function = 2,
+    Whitelist = 3,
+    Blacklist = 4,
 }
-
-setmetatable(CollisionMode, {
-    __index = function(_, Key)
-        if Key == "Whitelist" or Key == "Blacklist" then
-            warn("Rain.CollisionMode." .. Key .. " is deprecated. Use Rain.CollisionMode.Params instead.")
-        end
-    end,
-})
+export type CollisionMode = keyof<typeof(CollisionMode)>
 
 -- Variables & setup:
 
@@ -255,8 +251,8 @@ local rainDirection = RAIN_DEFAULT_DIRECTION -- Direction that rain falls into
 local currentCeiling = nil -- Y coordinate of ceiling (if present)
 
 local collisionMode = CollisionMode.None -- Collision mode (from Rain.CollisionMode) for raycasting
-local collisionList = nil -- Blacklist/whitelist for raycasting
 local collisionFunc = nil -- Raycasting test function for when collisionMode == Rain.CollisionMode.Function
+local collisionParams = nil -- User-supplied params for when collisionMode == Rain.CollisionMode.Params
 
 local straightLowAlpha = 1 -- Current transparency for straight rain particles
 local topdownLowAlpha = 1 -- Current transparency for top-down rain particles
@@ -343,7 +339,7 @@ do
     splashAttachments = {}
     rainAttachments = {}
 
-    for i = 1, RAIN_SPLASH_NUM do
+    for _ = 1, RAIN_SPLASH_NUM do
         -- splashes on ground
         local splashAttachment = Instance.new("Attachment")
         splashAttachment.Name = "__RainSplashAttachment"
@@ -390,50 +386,72 @@ end
 
 -- Helper methods:
 
+local RAYCAST_DEEP_STEP = 0.001 -- Distance to advance past a rejected hit when concatenating deep-casts
+
+local rng = Random.new()
+
 local ignoreEmitterList = { Emitter }
 
+local raycastParams = RaycastParams.new()
+raycastParams.ExcludeInstances = ignoreEmitterList
+
+local collisionListParams = RaycastParams.new()
+
+local function raycastWithCollisionList(origin, direction)
+    return workspace:Raycast(origin, direction, collisionListParams)
+end
+
+local function getLocalCharacter()
+    local localPlayer = Players.LocalPlayer
+    if not localPlayer then
+        return nil
+    end
+
+    return localPlayer.Character
+end
+
 local raycastFunctions = {
-    [CollisionMode.None] = function(ray, ignoreCharacter)
-        return workspace:FindPartOnRayWithIgnoreList(
-            ray,
-            ignoreCharacter and { Emitter, Players.LocalPlayer and Players.LocalPlayer.Character } or ignoreEmitterList
-        )
+    [CollisionMode.None] = function(origin, direction, ignoreCharacter)
+        raycastParams.ExcludeInstances = if ignoreCharacter then { Emitter, getLocalCharacter() } else ignoreEmitterList
+        return workspace:Raycast(origin, direction, raycastParams)
     end,
-    [CollisionMode.Blacklist] = function(ray)
-        return workspace:FindPartOnRayWithIgnoreList(ray, collisionList)
+    [CollisionMode.Params] = function(origin, direction)
+        return workspace:Raycast(origin, direction, collisionParams)
     end,
-    [CollisionMode.Whitelist] = function(ray)
-        return workspace:FindPartOnRayWithWhitelist(ray, collisionList)
-    end,
-    [CollisionMode.Function] = function(ray)
-        local destination = ray.Origin + ray.Direction
+    [CollisionMode.Blacklist] = raycastWithCollisionList,
+    [CollisionMode.Whitelist] = raycastWithCollisionList,
+    [CollisionMode.Function] = function(origin, direction)
+        raycastParams.ExcludeInstances = ignoreEmitterList
+
+        local destination = origin + direction
         -- draw multiple raycasts concatenated to each other until no hit / valid hit found
-        while ray.Direction.magnitude > 0.001 do
-            local part, pos, norm, mat = workspace:FindPartOnRayWithIgnoreList(ray, ignoreEmitterList)
-            if not part or collisionFunc(part) then
-                return part, pos, norm, mat
+        while direction.Magnitude > RAYCAST_DEEP_STEP do
+            local result = workspace:Raycast(origin, direction, raycastParams)
+            if not result or collisionFunc(result.Instance) then
+                return result
             end
-            local start = pos + ray.Direction.Unit * 0.001
-            ray = Ray.new(start, destination - start)
+            origin = result.Position + direction.Unit * RAYCAST_DEEP_STEP
+            direction = destination - origin
         end
+        return nil
     end,
 }
 local raycast = raycastFunctions[collisionMode]
 
 local function connectLoop()
-    local rand = Random.new()
-
     local inside = true -- Whether camera is currently in a spot occluded from the sky
     local frame = RAIN_UPDATE_PERIOD -- Frame counter, and force update cycle right now
 
     -- Update Emitter on RenderStepped since it needs to be synced to Camera
     table.insert(
         connections,
-        RunService.RenderStepped:connect(function()
-            -- Check if camera is outside or inside
-            local part, position = raycast(Ray.new(workspace.CurrentCamera.CFrame.p, -rainDirection * RAIN_SCANHEIGHT), true)
+        RunService.RenderStepped:Connect(function()
+            local cameraCFrame = workspace.CurrentCamera.CFrame
 
-            if (not currentCeiling or workspace.CurrentCamera.CFrame.p.y <= currentCeiling) and not part then
+            -- Check if camera is outside or inside
+            local occlusion = raycast(cameraCFrame.Position, -rainDirection * RAIN_SCANHEIGHT, true)
+
+            if (not currentCeiling or cameraCFrame.Position.y <= currentCeiling) and not occlusion then
                 -- Camera is outside and under ceiling
 
                 if volumeTarget < 1 and not disabled then
@@ -443,12 +461,12 @@ local function connectLoop()
 
                 frame = RAIN_UPDATE_PERIOD
 
-                local t = math.abs(workspace.CurrentCamera.CFrame.lookVector:Dot(rainDirection))
+                local t = math.abs(cameraCFrame.LookVector:Dot(rainDirection))
 
-                local center = workspace.CurrentCamera.CFrame.p
-                local right = workspace.CurrentCamera.CFrame.lookVector:Cross(-rainDirection)
-                right = right.magnitude > 0.001 and right.unit or -rainDirection
-                local forward = rainDirection:Cross(right).unit
+                local center = cameraCFrame.Position
+                local right = cameraCFrame.LookVector:Cross(-rainDirection)
+                right = if right.magnitude > 0.001 then right.Unit else -rainDirection
+                local forward = rainDirection:Cross(right).Unit
 
                 Emitter.Size = v3(
                     RAIN_EMITTER_DIM_DEFAULT,
@@ -469,7 +487,7 @@ local function connectLoop()
                     right.z,
                     -rainDirection.z,
                     forward.z
-                ) + (1 - t) * workspace.CurrentCamera.CFrame.lookVector * Emitter.Size.Z / 3 - t * rainDirection * RAIN_EMITTER_UP_MODIFIER
+                ) + (1 - t) * cameraCFrame.LookVector * Emitter.Size.Z / 3 - t * rainDirection * RAIN_EMITTER_UP_MODIFIER
 
                 Emitter.RainStraight.Enabled = true
                 Emitter.RainTopDown.Enabled = true
@@ -487,16 +505,18 @@ local function connectLoop()
     )
 
     -- Do the other effects on Stepped
-    local signal = RunService:IsRunning() and RunService.Stepped or RunService.RenderStepped
+    local signal = if RunService:IsRunning() then RunService.Stepped else RunService.RenderStepped
     table.insert(
         connections,
-        signal:connect(function()
+        signal:Connect(function()
+            local cameraCFrame = workspace.CurrentCamera.CFrame
+
             frame = frame + 1
 
             -- Only do some updates once every few frames
             if frame >= RAIN_UPDATE_PERIOD then
                 -- Measure of how much camera is facing down (0-1)
-                local t = math.abs(workspace.CurrentCamera.CFrame.lookVector:Dot(rainDirection))
+                local t = math.abs(cameraCFrame.LookVector:Dot(rainDirection))
 
                 -- More looking down = see straight particles less and see top-down particles more
                 local straightSequence = NumberSequence.new({
@@ -513,7 +533,7 @@ local function connectLoop()
                 })
 
                 -- Find desired rotation for the straight rain particles
-                local mapped = workspace.CurrentCamera.CFrame:inverse() * (workspace.CurrentCamera.CFrame.p - rainDirection)
+                local mapped = cameraCFrame:Inverse() * (cameraCFrame.Position - rainDirection)
                 local straightRotation = NumberRange.new(math.deg(math.atan2(-mapped.x, mapped.y)))
 
                 if inside then
@@ -529,14 +549,14 @@ local function connectLoop()
 
                         local volume = 0
 
-                        if not currentCeiling or workspace.CurrentCamera.CFrame.p.y <= currentCeiling then
+                        if not currentCeiling or cameraCFrame.Position.y <= currentCeiling then
                             -- Check how far away camera is from a space open to the sky using volume scan grid
 
                             local minDistance = RAIN_VOLUME_SCAN_RADIUS
                             local rayDirection = -rainDirection * RAIN_SCANHEIGHT
 
                             for i = 1, #volumeScanGrid do -- In order, so first hit is closest
-                                if not raycast(Ray.new(workspace.CurrentCamera.CFrame * volumeScanGrid[i], rayDirection), true) then
+                                if not raycast(cameraCFrame * volumeScanGrid[i], rayDirection, true) then
                                     minDistance = volumeScanGrid[i].magnitude
                                     break
                                 end
@@ -563,10 +583,10 @@ local function connectLoop()
                 frame = 0
             end
 
-            local center = workspace.CurrentCamera.CFrame.p
-            local right = workspace.CurrentCamera.CFrame.lookVector:Cross(-rainDirection)
-            right = right.magnitude > 0.001 and right.unit or -rainDirection
-            local forward = rainDirection:Cross(right).unit
+            local center = cameraCFrame.Position
+            local right = cameraCFrame.LookVector:Cross(-rainDirection)
+            right = if right.magnitude > 0.001 then right.Unit else -rainDirection
+            local forward = rainDirection:Cross(right).Unit
             local transform = CFrame.new(
                 center.x,
                 center.y,
@@ -589,18 +609,18 @@ local function connectLoop()
                 local rainAttachment = rainAttachments[i]
 
                 -- Sample random splash position
-                local x = rand:NextNumber(RAIN_OCCLUDECHECK_OFFSET_XZ_MIN, RAIN_OCCLUDECHECK_OFFSET_XZ_MAX)
-                local z = rand:NextNumber(RAIN_OCCLUDECHECK_OFFSET_XZ_MIN, RAIN_OCCLUDECHECK_OFFSET_XZ_MAX)
-                local part, position, normal = raycast(Ray.new(transform * v3(x, RAIN_OCCLUDECHECK_OFFSET_Y, z), rayDirection))
+                local x = rng:NextNumber(RAIN_OCCLUDECHECK_OFFSET_XZ_MIN, RAIN_OCCLUDECHECK_OFFSET_XZ_MAX)
+                local z = rng:NextNumber(RAIN_OCCLUDECHECK_OFFSET_XZ_MIN, RAIN_OCCLUDECHECK_OFFSET_XZ_MAX)
+                local impact = raycast(transform * v3(x, RAIN_OCCLUDECHECK_OFFSET_Y, z), rayDirection)
 
-                if part then
+                if impact then
                     -- Draw a splash at hit
-                    splashAttachment.Position = position + normal * RAIN_SPLASH_CORRECTION_Y
+                    splashAttachment.Position = impact.Position + impact.Normal * RAIN_SPLASH_CORRECTION_Y
                     splashAttachment.RainSplash:Emit(1)
 
                     if inside then
                         -- Draw occlusion rain particles a little bit above the splash position
-                        local corrected = position - rainDirection * RAIN_SPLASH_STRAIGHT_OFFSET_Y
+                        local corrected = impact.Position - rainDirection * RAIN_SPLASH_STRAIGHT_OFFSET_Y
                         if currentCeiling and corrected.Y > currentCeiling and rainDirection.Y < 0 then
                             corrected = corrected + rainDirection * (currentCeiling - corrected.Y) / rainDirection.Y
                         end
@@ -610,7 +630,7 @@ local function connectLoop()
                     end
                 elseif inside then
                     -- Draw occlusion rain particles on the XZ-position at around the camera's height
-                    local corrected = transform * v3(x, rand:NextNumber(RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MIN, RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MAX), z)
+                    local corrected = transform * v3(x, rng:NextNumber(RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MIN, RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MAX), z)
                     if currentCeiling and corrected.Y > currentCeiling and rainDirection.Y < 0 then
                         corrected = corrected + rainDirection * (currentCeiling - corrected.Y) / rainDirection.Y
                     end
@@ -627,7 +647,7 @@ local function disconnectLoop()
     -- If present, disconnect all RunService connections
     if #connections > 0 then
         for _, v in pairs(connections) do
-            v:disconnect()
+            v:Disconnect()
         end
         connections = {}
     end
@@ -637,7 +657,7 @@ local function disableSound(tweenInfo)
     -- Tween the rain sound to be mute over a given easing function
     volumeTarget = 0
     local tween = TweenService:Create(Sound, tweenInfo, { Volume = 0 })
-    tween.Completed:connect(function(state)
+    tween.Completed:Connect(function(state)
         if state == Enum.PlaybackState.Completed then
             Sound:Stop()
         end
@@ -666,25 +686,25 @@ local function makeProperty(valueObjectClass, defaultValue, setter)
     if defaultValue then
         valueObject.Value = defaultValue
     end
-    valueObject.Changed:connect(setter)
+    valueObject.Changed:Connect(setter)
     setter(valueObject.Value)
     return valueObject
 end
 
 local Color = makeProperty("Color3Value", RAIN_DEFAULT_COLOR, function(value)
-    local value = ColorSequence.new(value)
+    local ColorSequence = ColorSequence.new(value)
 
-    Emitter.RainStraight.Color = value
-    Emitter.RainTopDown.Color = value
+    Emitter.RainStraight.Color = ColorSequence
+    Emitter.RainTopDown.Color = ColorSequence
 
     for _, v in pairs(splashAttachments) do
-        v.RainSplash.Color = value
+        v.RainSplash.Color = ColorSequence
     end
     for _, v in pairs(rainAttachments) do
-        v.RainStraight.Color = value
-        v.RainTopDown.Color = value
+        v.RainStraight.Color = ColorSequence
+        v.RainTopDown.Color = ColorSequence
     end
-end)
+end) :: Color3Value
 
 local function updateTransparency(value)
     local opacity = (1 - value) * (1 - GlobalModifier.Value)
@@ -704,13 +724,14 @@ local function updateTransparency(value)
         v.RainSplash.Transparency = splashSequence
     end
 end
-local Transparency = makeProperty("NumberValue", RAIN_DEFAULT_TRANSPARENCY, updateTransparency)
-GlobalModifier.Changed:connect(updateTransparency)
+
+local Transparency = makeProperty("NumberValue", RAIN_DEFAULT_TRANSPARENCY, updateTransparency) :: NumberValue
+GlobalModifier.Changed:Connect(updateTransparency)
 
 local SpeedRatio = makeProperty("NumberValue", RAIN_DEFAULT_SPEEDRATIO, function(value)
     Emitter.RainStraight.Speed = NumberRange.new(value * RAIN_STRAIGHT_MAX_SPEED)
     Emitter.RainTopDown.Speed = NumberRange.new(value * RAIN_TOPDOWN_MAX_SPEED)
-end)
+end) :: NumberValue
 
 local IntensityRatio = makeProperty("NumberValue", RAIN_DEFAULT_INTENSITYRATIO, function(value)
     Emitter.RainStraight.Rate = RAIN_STRAIGHT_MAX_RATE * value
@@ -718,7 +739,7 @@ local IntensityRatio = makeProperty("NumberValue", RAIN_DEFAULT_INTENSITYRATIO, 
 
     intensityOccludedRain = math.ceil(RAIN_OCCLUDED_MAXINTENSITY * value)
     numSplashes = RAIN_SPLASH_NUM * value
-end)
+end) :: NumberValue
 
 local LightEmission = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTEMISSION, function(value)
     Emitter.RainStraight.LightEmission = value
@@ -731,7 +752,7 @@ local LightEmission = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTEMISSION, fu
     for _, v in pairs(splashAttachments) do
         v.RainSplash.LightEmission = value
     end
-end)
+end) :: NumberValue
 
 local LightInfluence = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTINFLUENCE, function(value)
     Emitter.RainStraight.LightInfluence = value
@@ -744,13 +765,13 @@ local LightInfluence = makeProperty("NumberValue", RAIN_DEFAULT_LIGHTINFLUENCE, 
     for _, v in pairs(splashAttachments) do
         v.RainSplash.LightInfluence = value
     end
-end)
+end) :: NumberValue
 
 local RainDirection = makeProperty("Vector3Value", RAIN_DEFAULT_DIRECTION, function(value)
     if value.magnitude > 0.001 then
-        rainDirection = value.unit
+        rainDirection = value.Unit
     end
-end)
+end) :: Vector3Value
 
 -- Exposed API:
 
@@ -758,7 +779,7 @@ local Rain = {}
 
 Rain.CollisionMode = CollisionMode
 
-function Rain:Enable(tweenInfo)
+function Rain:Enable(tweenInfo: TweenInfo?)
     if tweenInfo ~= nil and typeof(tweenInfo) ~= "TweenInfo" then
         error("bad argument #1 to 'Enable' (TweenInfo expected, got " .. typeof(tweenInfo) .. ")", 2)
     end
@@ -788,20 +809,20 @@ function Rain:Enable(tweenInfo)
 
     if not Sound.Playing then
         Sound:Play()
-        Sound.TimePosition = math.random() * Sound.TimeLength
+        Sound.TimePosition = rng:NextNumber() * Sound.TimeLength
     end
 
     disabled = false
 end
 
-function Rain:Disable(tweenInfo)
+function Rain:Disable(tweenInfo: TweenInfo?)
     if tweenInfo ~= nil and typeof(tweenInfo) ~= "TweenInfo" then
         error("bad argument #1 to 'Disable' (TweenInfo expected, got " .. typeof(tweenInfo) .. ")", 2)
     end
 
     if tweenInfo then
         local tween = TweenService:Create(GlobalModifier, tweenInfo, { Value = 1 })
-        tween.Completed:connect(function(state)
+        tween.Completed:Connect(function(state)
             if state == Enum.PlaybackState.Completed then
                 -- Only disable the rain completely once the visual effects are faded out
                 disable()
@@ -819,7 +840,7 @@ function Rain:Disable(tweenInfo)
     disabled = true
 end
 
-function Rain:SetColor(value, tweenInfo)
+function Rain:SetColor(value: Color3, tweenInfo: TweenInfo?)
     if typeof(value) ~= "Color3" then
         error("bad argument #1 to 'SetColor' (Color3 expected, got " .. typeof(value) .. ")", 2)
     elseif tweenInfo ~= nil and typeof(tweenInfo) ~= "TweenInfo" then
@@ -858,7 +879,7 @@ Rain.SetIntensityRatio = makeRatioSetter("SetIntensityRatio", IntensityRatio)
 Rain.SetLightEmission = makeRatioSetter("SetLightEmission", LightEmission)
 Rain.SetLightInfluence = makeRatioSetter("SetLightInfluence", LightInfluence)
 
-function Rain:SetVolume(volume, tweenInfo)
+function Rain:SetVolume(volume: number, tweenInfo: TweenInfo?)
     if typeof(volume) ~= "number" then
         error("bad argument #1 to 'SetVolume' (number expected, got " .. typeof(volume) .. ")", 2)
     elseif tweenInfo ~= nil and typeof(tweenInfo) ~= "TweenInfo" then
@@ -872,14 +893,14 @@ function Rain:SetVolume(volume, tweenInfo)
     end
 end
 
-function Rain:SetDirection(direction, tweenInfo)
+function Rain:SetDirection(direction: Vector3, tweenInfo: TweenInfo?)
     if typeof(direction) ~= "Vector3" then
         error("bad argument #1 to 'SetDirection' (Vector3 expected, got " .. typeof(direction) .. ")", 2)
     elseif tweenInfo ~= nil and typeof(tweenInfo) ~= "TweenInfo" then
         error("bad argument #2 to 'SetDirection' (TweenInfo expected, got " .. typeof(tweenInfo) .. ")", 2)
     end
 
-    if not (direction.unit.magnitude > 0) then -- intentional statement formatting since NaN comparison
+    if not (direction.Unit.magnitude > 0) then -- intentional statement formatting since NaN comparison
         warn("Attempt to set rain direction to a zero-length vector, falling back on default direction = (" .. tostring(RAIN_DEFAULT_DIRECTION) .. ")")
         direction = RAIN_DEFAULT_DIRECTION
     end
@@ -891,7 +912,7 @@ function Rain:SetDirection(direction, tweenInfo)
     end
 end
 
-function Rain:SetCeiling(ceiling)
+function Rain:SetCeiling(ceiling: number?)
     if ceiling ~= nil and typeof(ceiling) ~= "number" then
         error("bad argument #1 to 'SetCeiling' (number expected, got " .. typeof(ceiling) .. ")", 2)
     end
@@ -899,7 +920,7 @@ function Rain:SetCeiling(ceiling)
     currentCeiling = ceiling
 end
 
-function Rain:SetStraightTexture(asset)
+function Rain:SetStraightTexture(asset: string)
     if typeof(asset) ~= "string" then
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
@@ -911,7 +932,7 @@ function Rain:SetStraightTexture(asset)
     end
 end
 
-function Rain:SetTopDownTexture(asset)
+function Rain:SetTopDownTexture(asset: string)
     if typeof(asset) ~= "string" then
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
@@ -923,7 +944,7 @@ function Rain:SetTopDownTexture(asset)
     end
 end
 
-function Rain:SetSplashTexture(asset)
+function Rain:SetSplashTexture(asset: string)
     if typeof(asset) ~= "string" then
         error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
@@ -933,7 +954,7 @@ function Rain:SetSplashTexture(asset)
     end
 end
 
-function Rain:SetSoundId(asset)
+function Rain:SetSoundId(asset: string)
     if typeof(asset) ~= "string" then
         error("bad argument #1 to 'SetSoundId' (string expected, got " .. typeof(asset) .. ")", 2)
     end
@@ -941,15 +962,34 @@ function Rain:SetSoundId(asset)
     Sound.SoundId = asset
 end
 
-function Rain:SetCollisionMode(mode, param)
+function Rain:SetCollisionMode(mode: CollisionMode, param: (RaycastParams | Instance | { Instance } | ((Instance) -> boolean))?)
     if mode == CollisionMode.None then
-        -- Regular mode needs no white/blacklist or test function
-        collisionList = nil
+        -- Regular mode needs no params or test function
         collisionFunc = nil
+        collisionParams = nil
+    elseif mode == CollisionMode.Params then
+        if typeof(param) ~= "RaycastParams" then
+            error("bad argument #2 to 'SetCollisionMode' (RaycastParams expected, got " .. typeof(param) .. ")", 2)
+        end
+
+        local excluded = param.ExcludeInstances
+        if excluded and not table.find(excluded, Emitter) then
+            -- Add Emitter anyway, since users will probably not expect collisions with emitter block regardless
+            table.insert(excluded, Emitter)
+            param.ExcludeInstances = excluded
+        end
+
+        -- Params mode does not need a test function
+        collisionFunc = nil
+
+        collisionParams = param
     elseif mode == CollisionMode.Blacklist then
+        warn("Rain.CollisionMode.Blacklist is deprecated. Use Rain.CollisionMode.Params instead.")
+
+        local blacklist = { Emitter }
         if typeof(param) == "Instance" then
             -- Add Emitter anyway, since users will probably not expect collisions with emitter block regardless
-            collisionList = { param, Emitter }
+            blacklist = { param, Emitter }
         elseif typeof(param) == "table" then
             for i = 1, #param do
                 if typeof(param[i]) ~= "Instance" then
@@ -963,19 +1003,25 @@ function Rain:SetCollisionMode(mode, param)
                     )
                 end
             end
-            collisionList = { Emitter } -- see above
+
             for i = 1, #param do
-                table.insert(collisionList, param[i])
+                table.insert(blacklist, param[i])
             end
         else
             error("bad argument #2 to 'SetCollisionMode (Instance or array of Instance expected, got " .. typeof(param) .. ")'", 2)
         end
 
+        collisionListParams.IncludeInstances = {}
+        collisionListParams.ExcludeInstances = blacklist
+
         -- Blacklist does not need a test function
         collisionFunc = nil
     elseif mode == CollisionMode.Whitelist then
+        warn("Rain.CollisionMode.Whitelist is deprecated. Use Rain.CollisionMode.Params instead.")
+
+        local whitelist
         if typeof(param) == "Instance" then
-            collisionList = { param }
+            whitelist = { param }
         elseif typeof(param) == "table" then
             for i = 1, #param do
                 if typeof(param[i]) ~= "Instance" then
@@ -989,13 +1035,16 @@ function Rain:SetCollisionMode(mode, param)
                     )
                 end
             end
-            collisionList = {}
+            whitelist = {}
             for i = 1, #param do
-                table.insert(collisionList, param[i])
+                table.insert(whitelist, param[i])
             end
         else
             error("bad argument #2 to 'SetCollisionMode (Instance or array of Instance expected, got " .. typeof(param) .. ")'", 2)
         end
+
+        collisionListParams.ExcludeInstances = {}
+        collisionListParams.IncludeInstances = whitelist
 
         -- Whitelist does not need a test function
         collisionFunc = nil
@@ -1004,12 +1053,12 @@ function Rain:SetCollisionMode(mode, param)
             error("bad argument #2 to 'SetCollisionMode' (function expected, got " .. typeof(param) .. ")", 2)
         end
 
-        -- Test function does not need a list
-        collisionList = nil
+        -- Test function does not need params
+        collisionParams = nil
 
         collisionFunc = param
     else
-        error("bad argument #1 to 'SetCollisionMode (Rain.CollisionMode expected, got " .. typeof(param) .. ")'", 2)
+        error("bad argument #1 to 'SetCollisionMode (Rain.CollisionMode expected, got " .. typeof(mode) .. ")'", 2)
     end
 
     collisionMode = mode
