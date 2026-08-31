@@ -296,6 +296,8 @@ do
     Emitter.Transparency = 1
     Emitter.Anchored = true
     Emitter.CanCollide = false
+    Emitter.CanQuery = false
+    Emitter.CanTouch = false
     Emitter.Locked = false
     Emitter.Archivable = false
     Emitter.TopSurface = Enum.SurfaceType.Smooth
