@@ -226,12 +226,12 @@ local RAIN_VOLUME_SCAN_GRID = { -- Unit range grid for scanning how far away use
 
 local CollisionMode = {
     None = 0,
-    Params = 1,
-    Function = 2,
-    Whitelist = 3,
-    Blacklist = 4,
+    Whitelist = 1,
+    Blacklist = 2,
+    Function = 3,
+    Params = 4,
 }
-export type CollisionMode = keyof<typeof(CollisionMode)>
+export type CollisionMode = number
 
 -- Variables & setup:
 
@@ -989,13 +989,6 @@ function Rain:SetCollisionMode(mode: CollisionMode, param: (RaycastParams | Inst
             error("bad argument #2 to 'SetCollisionMode' (RaycastParams expected, got " .. typeof(param) .. ")", 2)
         end
 
-        local excluded = param.ExcludeInstances
-        if excluded and not table.find(excluded, Emitter) then
-            -- Add Emitter anyway, since users will probably not expect collisions with emitter block regardless
-            table.insert(excluded, Emitter)
-            param.ExcludeInstances = excluded
-        end
-
         -- Params mode does not need a test function
         collisionFunc = nil
 
@@ -1028,7 +1021,7 @@ function Rain:SetCollisionMode(mode: CollisionMode, param: (RaycastParams | Inst
             error("bad argument #2 to 'SetCollisionMode (Instance or array of Instance expected, got " .. typeof(param) .. ")'", 2)
         end
 
-        collisionListParams.IncludeInstances = {}
+        collisionListParams.IncludeInstances = nil
         collisionListParams.ExcludeInstances = blacklist
 
         -- Blacklist does not need a test function
@@ -1060,7 +1053,7 @@ function Rain:SetCollisionMode(mode: CollisionMode, param: (RaycastParams | Inst
             error("bad argument #2 to 'SetCollisionMode (Instance or array of Instance expected, got " .. typeof(param) .. ")'", 2)
         end
 
-        collisionListParams.ExcludeInstances = {}
+        collisionListParams.ExcludeInstances = nil
         collisionListParams.IncludeInstances = whitelist
 
         -- Whitelist does not need a test function
