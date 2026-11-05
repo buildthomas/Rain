@@ -246,6 +246,8 @@ GlobalModifier.Value = 1 -- 0 = fully visible, 1 = invisible
 local connections = {} -- Stores connections to RunService signals when enabled
 
 local disabled = true -- Value to figure out whether we are moving towards a disabled state (useful during tweens)
+local fadeOutTween = nil -- Pending visual fade-out from Rain:Disable(tweenInfo), cancelled by Rain:Enable
+local soundFadeOutTween = nil -- Pending sound fade-out, cancelled by Rain:Enable
 
 local rainDirection = RAIN_DEFAULT_DIRECTION -- Direction that rain falls into
 
@@ -452,8 +454,18 @@ local raycastFunctions = {
 }
 local raycast = raycastFunctions[collisionMode]
 
+-- A ray that starts inside terrain water does not hit that water, so a point under the water surface
+-- looks open to the sky. Cast back from the scan height towards the point with the current collision
+-- mode: if the first thing it meets is water, the point is submerged. Only call this when the normal
+-- upward cast found nothing. Rain is hidden and the rain sound is silent while the camera is submerged.
+local function isUnderWater(position, scan)
+    local result = raycast(position + scan, -scan, true)
+    return result ~= nil and result.Material == Enum.Material.Water
+end
+
 local function connectLoop()
     local inside = true -- Whether camera is currently in a spot occluded from the sky
+    local underWater = false -- Whether camera is currently submerged in terrain water
     local frame = RAIN_UPDATE_PERIOD -- Frame counter, and force update cycle right now
 
     -- Update Emitter on RenderStepped since it needs to be synced to Camera
@@ -464,9 +476,11 @@ local function connectLoop()
             local cameraPosition = cameraCFrame.Position
 
             -- Check if camera is outside or inside
-            local occlusion = raycast(cameraPosition, -rainDirection * RAIN_SCANHEIGHT, true)
+            local scan = -rainDirection * RAIN_SCANHEIGHT
+            local occlusion = raycast(cameraPosition, scan, true)
+            underWater = not occlusion and isUnderWater(cameraPosition, scan)
 
-            if (not currentCeiling or cameraPosition.y <= currentCeiling) and not occlusion then
+            if (not currentCeiling or cameraPosition.y <= currentCeiling) and not occlusion and not underWater then
                 -- Camera is outside and under ceiling
 
                 if volumeTarget < 1 and not disabled then
@@ -563,7 +577,7 @@ local function connectLoop()
 
                         local volume = 0
 
-                        if not currentCeiling or cameraCFrame.Position.y <= currentCeiling then
+                        if (not currentCeiling or cameraCFrame.Position.y <= currentCeiling) and not underWater then
                             -- Check how far away camera is from a space open to the sky using volume scan grid
 
                             local minDistance = RAIN_VOLUME_SCAN_RADIUS
@@ -674,8 +688,12 @@ local function disableSound(tweenInfo)
     -- Tween the rain sound to be mute over a given easing function
     volumeTarget = 0
     local tween = TweenService:Create(Sound, tweenInfo, { Volume = 0 })
+    soundFadeOutTween = tween
     tween.Completed:Connect(function(state)
-        if state == Enum.PlaybackState.Completed then
+        if soundFadeOutTween == tween then
+            soundFadeOutTween = nil
+        end
+        if state == Enum.PlaybackState.Completed and disabled then
             Sound:Stop()
         end
         tween:Destroy()
@@ -803,6 +821,16 @@ function Rain:Enable(tweenInfo: TweenInfo?)
 
     disconnectLoop() -- Just in case :Enable(..) is called multiple times on accident
 
+    -- Stop a fade-out from an earlier Rain:Disable(tweenInfo); its completion would disable the rain again
+    if fadeOutTween then
+        fadeOutTween:Cancel()
+        fadeOutTween = nil
+    end
+    if soundFadeOutTween then
+        soundFadeOutTween:Cancel()
+        soundFadeOutTween = nil
+    end
+
     EmitterStraight.Enabled = true
     EmitterTopDown.Enabled = true
     Emitter.Parent = workspace.CurrentCamera
@@ -839,8 +867,12 @@ function Rain:Disable(tweenInfo: TweenInfo?)
 
     if tweenInfo then
         local tween = TweenService:Create(GlobalModifier, tweenInfo, { Value = 1 })
+        fadeOutTween = tween
         tween.Completed:Connect(function(state)
-            if state == Enum.PlaybackState.Completed then
+            if fadeOutTween == tween then
+                fadeOutTween = nil
+            end
+            if state == Enum.PlaybackState.Completed and disabled then
                 -- Only disable the rain completely once the visual effects are faded out
                 disable()
             end
@@ -951,7 +983,7 @@ end
 
 function Rain:SetTopDownTexture(asset: string)
     if typeof(asset) ~= "string" then
-        error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
+        error("bad argument #1 to 'SetTopDownTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
 
     EmitterTopDown.Texture = asset
@@ -963,7 +995,7 @@ end
 
 function Rain:SetSplashTexture(asset: string)
     if typeof(asset) ~= "string" then
-        error("bad argument #1 to 'SetStraightTexture' (string expected, got " .. typeof(asset) .. ")", 2)
+        error("bad argument #1 to 'SetSplashTexture' (string expected, got " .. typeof(asset) .. ")", 2)
     end
 
     for _, v in splashEmitters do
