@@ -167,9 +167,9 @@ local RAIN_SPLASH_STRAIGHT_OFFSET_Y = 50 -- Offset against rain direction for st
 local RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MIN = 20 -- Min/max vertical offset from camera height for straight rain particles
 local RAIN_NOSPLASH_STRAIGHT_OFFSET_Y_MAX = 100 -- when no splash position could be found (i.e. no floor at that XZ-column)
 
-local RAIN_OCCLUDED_MINSPEED = 70 -- Minimum speed for the occluded straight rain emitters
-local RAIN_OCCLUDED_MAXSPEED = 100 -- Maximum speed for the occluded straight rain emitters
-local RAIN_OCCLUDED_LIFETIME = NumberRange.new(RAIN_SPLASH_STRAIGHT_OFFSET_Y / RAIN_OCCLUDED_MAXSPEED)
+local RAIN_OCCLUDED_SPEED = 100 -- Speed for the occluded rain emitters
+-- One speed and a matching lifetime, so drops emitted RAIN_SPLASH_STRAIGHT_OFFSET_Y above a splash end on the surface
+local RAIN_OCCLUDED_LIFETIME = NumberRange.new(RAIN_SPLASH_STRAIGHT_OFFSET_Y / RAIN_OCCLUDED_SPEED)
 local RAIN_OCCLUDED_SPREAD = Vector2.new(10, 10) -- Spread angle for the occluded straight rain emitters
 local RAIN_OCCLUDED_MAXINTENSITY = 2 -- How many occluded straight rain particles are emitted for every splash for max intensity
 
@@ -380,14 +380,14 @@ do
         local rainAttachment = Instance.new("Attachment")
         rainAttachment.Name = "__RainOccludedAttachment"
         local straightOccluded = EmitterStraight:Clone()
-        straightOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_MINSPEED, RAIN_OCCLUDED_MAXSPEED)
+        straightOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_SPEED)
         straightOccluded.Lifetime = RAIN_OCCLUDED_LIFETIME
         straightOccluded.SpreadAngle = RAIN_OCCLUDED_SPREAD
         straightOccluded.LockedToPart = false
         straightOccluded.Enabled = false
         straightOccluded.Parent = rainAttachment
         local topdownOccluded = EmitterTopDown:Clone()
-        topdownOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_MINSPEED, RAIN_OCCLUDED_MAXSPEED)
+        topdownOccluded.Speed = NumberRange.new(RAIN_OCCLUDED_SPEED)
         topdownOccluded.Lifetime = RAIN_OCCLUDED_LIFETIME
         topdownOccluded.SpreadAngle = RAIN_OCCLUDED_SPREAD
         topdownOccluded.LockedToPart = false
