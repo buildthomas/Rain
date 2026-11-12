@@ -14,12 +14,6 @@ https://devforum.roblox.com/t/open-source-rain-effect-plugin-release/157190
 There is also a user-friendly Roblox plugin available to insert the rain effect into your games, which is useful to preview the rain effect in Studio, as well as allows non-scripters to insert rain into their games all by themselves:
 https://www.roblox.com/library/2166774609/Rain-Plugin
 
-# Examples
-
-https://gfycat.com/HeavenlyCelebratedBee
-
-https://gfycat.com/LittleClassicGoldenretriever
-
 # API available on the Rain Module
 
 The following listing contains all API members that can be used with a description.
